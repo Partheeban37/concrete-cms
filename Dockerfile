@@ -15,9 +15,11 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    libicu-dev \
     mariadb-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql gd mbstring zip xml \
+    && docker-php-ext-install pdo pdo_mysql gd mbstring zip xml intl \
+    && docker-php-ext-enable intl \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache modules required by Concrete CMS
