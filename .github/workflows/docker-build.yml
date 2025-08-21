@@ -3,7 +3,7 @@ name: Build & Push Docker Image
 on:
   push:
     branches:
-      - main   # Only run when code is pushed/merged into main
+      - main   # Run only when code is pushed/merged into main
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
 
     permissions:
       contents: read
-      packages: write
+      packages: write   # Needed for GHCR
 
     steps:
       # Step 1: Checkout repo code
@@ -26,17 +26,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 3: Build Docker image
+      # Step 3: Extract repository owner and name (in lowercase)
+      - name: Set IMAGE_NAME
+        run: |
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/concrete-cms"
+          echo "IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      # Step 4: Build Docker image
       - name: Build Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/concrete-cms
-          IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')   # force lowercase
-          docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:${{ github.sha }} .
+          docker build \
+            -t $IMAGE_NAME:latest \
+            -t $IMAGE_NAME:${{ github.sha }} .
 
-      # Step 4: Push Docker image
+      # Step 5: Push Docker image
       - name: Push Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/concrete-cms
-          IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')   # force lowercase
           docker push $IMAGE_NAME:latest
           docker push $IMAGE_NAME:${{ github.sha }}
