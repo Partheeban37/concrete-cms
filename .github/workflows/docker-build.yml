@@ -3,7 +3,7 @@ name: Build & Push Docker Image
 on:
   push:
     branches:
-      - main   # Change if your default branch is different
+      - main   # Only run when code is pushed/merged into main
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
       packages: write
 
     steps:
-      # Step 1: Checkout your repo code
+      # Step 1: Checkout repo code
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -29,13 +29,14 @@ jobs:
       # Step 3: Build Docker image
       - name: Build Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository }}/concrete-cms
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/concrete-cms
+          IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')   # force lowercase
           docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:${{ github.sha }} .
 
       # Step 4: Push Docker image
       - name: Push Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository }}/concrete-cms
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/concrete-cms
+          IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')   # force lowercase
           docker push $IMAGE_NAME:latest
           docker push $IMAGE_NAME:${{ github.sha }}
-
